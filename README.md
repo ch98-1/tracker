@@ -1,2 +1,2 @@
 # tracker
-Tracks who and what is where and when it got there. Each object has a name that starts with a letter or a number.
+Tracks who and what is where and when it got there. Each object has a name that starts with a letter or a number, exept for "all". To perform a command, you do <name> <command>. Commands are "in" for going in, "out" for going out, "log" for getting a log for that name in specified time period, "add" for adding that name to the database, "rem" to remove a name from the database, "note" to add a note associated with that name, and "view" to view the note associated with that name. You can use name "all" on in, out, log, note, rem, and view command to perform that action for every member in the database.
