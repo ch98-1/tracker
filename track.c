@@ -19,6 +19,7 @@ int main(int argc, char *argv[]){
 	if(argc > 1) strcpy(str, argv[1]);
 	FILE *fp = fopen(str, "ab+");
 	if(fp == NULL)goto(quit);
+	setbuf(fp, NULL, _IOLBF);
 	rewind(fp);
 	printf(".");
 	while (EOF != fscanf(fp, "%4095s %4095s %15s", str, str, cmd)){
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]){
 		if (!strcmp(cmd, "in") || !strcmp(cmd, "out")){
 			pl[i].status = !strcmp(cmd, "in") ? 1 : 0;
 		}
-next:
+		next:
 	}
 	printf(".\n");
 	while(1){
@@ -47,9 +48,14 @@ next:
 			for (i = 0; i < pls; i++){
 				if (!strcmp(str, pl[i].name)){
 						pl[i].status = 1;
-						break;
+						goto(skip1);
 				}
 			}
+			pls++;
+			pl = realloc(pl, pls*sizeof(ps));
+			strcpy(pl[pls - 1].name, name);
+			pl[i].status = 1;
+			skip1:
 			if (!strcmp(str, "all")){
 				for (i = 0; i < pls; i++){
 						pl[i].status = 1;
@@ -60,9 +66,14 @@ next:
 			for (i = 0; i < pls; i++){
 				if (!strcmp(str, pl[i].name)){
 					pl[i].status = 0;
-					break;
+					goto(skip2);
 				}
 			}
+			pls++;
+			pl = realloc(pl, pls*sizeof(ps));
+			strcpy(pl[pls - 1].name, name);
+			pl[i].status = 0;
+			skip2:
 			if (!strcmp(str, "all")){
 				for (i = 0; i < pls; i++){
 						pl[i].status = 0;
@@ -79,18 +90,9 @@ next:
 
 			}
 		}
-		else if(!strcmp(cmd, "note")){
-			if (!strcmp(str, "all")){
-
-			}
-		}
-		else if(!strcmp(cmd, "view")){
-			if (!strcmp(str, "all")){
-
-			}
-		}
 		else printf("\n");
 	}
 quit:
+	fflush(fp);
 	fclose(fp);
 }
