@@ -12,7 +12,8 @@ int main(int argc, char *argv[]){
 	printf("Loading");
 	char str[4096];
 	char cmd[16]; 
-	int i;
+	char timestr[64];
+	unsigned int i;
 	struct tm rtiv;
 	struct tm *rtime = NULL;
 	time_t system_time;
@@ -103,19 +104,20 @@ int main(int argc, char *argv[]){
 				int ds, de, l;
 				scanf("%i-%i %i", &de, &ds, &l);
 				rewind(fp);
-				if (l > 0){
-					for (i = 0; i < pls; i++){
-						printf("%s is %s\n", pl[i].name, pl[i].status ? "in" : "out");
-					}
-				}
 				char name[4096];
 				strcpy(name, str);
 				if (l > 1){
 					while (EOF != fscanf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", &rtiv.tm_sec, &rtiv.tm_min, &rtiv.tm_hour, &rtiv.tm_mday, &rtiv.tm_mon, &rtiv.tm_year, &rtiv.tm_wday, &rtiv.tm_yday, &rtiv.tm_isdst, str, cmd)){
 						int d = (int)(difftime(time(NULL), mktime(&rtiv)) / 86400);
 						if(d <= ds && d >= de){
-							printf("%s %s got %s\n", asctime(&rtiv), str, cmd);
+							strftime(timestr, 63, "%c", &rtiv);
+							printf("%s %s got %s\n", timestr, str, cmd);
 						}
+					}
+				}
+				if (l > 0){
+					for (i = 0; i < pls; i++){
+						printf("%s is %s\n", pl[i].name, pl[i].status ? "in" : "out");
 					}
 				}
 			}
@@ -124,30 +126,33 @@ int main(int argc, char *argv[]){
 				int ds, de, l;
 				scanf("%i-%i %i", &de, &ds, &l);
 				rewind(fp);
-				for (i = 0; i < pls; i++){
-					if (!strcmp(str, pl[i].name) && l > 0){
-						printf("%s is %s\n", str, pl[i].status ? "in" : "out");
-					}
-				}
 				char name[4096];
 				strcpy(name, str);
-				while (EOF != fscanf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", &rtiv.tm_sec, &rtiv.tm_min, &rtiv.tm_hour, &rtiv.tm_mday, &rtiv.tm_mon, &rtiv.tm_year, &rtiv.tm_wday, &rtiv.tm_yday, &rtiv.tm_isdst, str, cmd)){
-					for (i = 0; i < pls; i++){
-						if (!strcmp(str, name) && l > 1){
-							int d = (int)(difftime(time(NULL), mktime(&rtiv)) / 86400);
-							if(d <= ds && d >= de){
-								printf("%s %s got %s\n", asctime(&rtiv), name, cmd);
+				if (l > 1){
+					while (EOF != fscanf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", &rtiv.tm_sec, &rtiv.tm_min, &rtiv.tm_hour, &rtiv.tm_mday, &rtiv.tm_mon, &rtiv.tm_year, &rtiv.tm_wday, &rtiv.tm_yday, &rtiv.tm_isdst, str, cmd)){
+						for (i = 0; i < pls; i++){
+							if (!strcmp(str, name)){
+								int d = (int)(difftime(time(NULL), mktime(&rtiv)) / 86400);
+								if (d <= ds && d >= de){
+									strftime(timestr, 63, "%c", &rtiv);
+									printf("%s %s got %s\n", timestr, str, cmd);
+								}
 							}
 						}
 					}
 				}
+				if (l > 0){
+					for (i = 0; i < pls; i++){
+						printf("%s is %s\n", pl[i].name, pl[i].status ? "in" : "out");
+					}
+				}
 			}
 		}
-		else if(!strcmp(cmd, "logf")){
+		else if (!strcmp(cmd, "logf")){
 			printf("file:");
 			char fln[4096];
 			scanf("%4095s", fln);
-			FILE *lfp = fopen( fln, "ab");
+			FILE *lfp = fopen(fln, "ab");
 			time(&system_time);
 			fprintf(lfp, "%s\n", ctime(&system_time));
 			if (!strcmp(str, "all")){
@@ -155,18 +160,21 @@ int main(int argc, char *argv[]){
 				int ds, de, l;
 				scanf("%i-%i %i", &de, &ds, &l);
 				rewind(fp);
-				if (l > 0){
-					for (i = 0; i < pls; i++){
-						fprintf(lfp, "%s is %s\n", pl[i].name, pl[i].status ? "in" : "out");
-					}
-				}
 				char name[4096];
 				strcpy(name, str);
 				if (l > 1){
 					while (EOF != fscanf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", &rtiv.tm_sec, &rtiv.tm_min, &rtiv.tm_hour, &rtiv.tm_mday, &rtiv.tm_mon, &rtiv.tm_year, &rtiv.tm_wday, &rtiv.tm_yday, &rtiv.tm_isdst, str, cmd)){
 						int d = (int)(difftime(time(NULL), mktime(&rtiv)) / 86400);
-						if(d <= ds && d >= de){
-							fprintf(lfp, "%s %s got %s\n", asctime(&rtiv), str, cmd);
+						if (d <= ds && d >= de){
+							strftime(timestr, 63, "%c", &rtiv);
+							fprintf(lfp, "%s,%s,%s\n", timestr, str, cmd);
+						}
+					}
+				}
+				if (l > 0){
+					for (i = 0; i < pls; i++){
+						if (!strcmp(name, pl[i].name)){
+							fprintf(lfp, "%s,%s\n", pl[i].name, pl[i].status ? "in" : "out");
 						}
 					}
 				}
@@ -176,24 +184,28 @@ int main(int argc, char *argv[]){
 				int ds, de, l;
 				scanf("%i-%i %i", &de, &ds, &l);
 				rewind(fp);
-				for (i = 0; i < pls; i++){
-					if (!strcmp(str, pl[i].name) && l > 0){
-						fprintf(lfp, "%s is %s\n", str, pl[i].status ? "in" : "out");
-					}
-				}
 				char name[4096];
 				strcpy(name, str);
-				while (EOF != fscanf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", &rtiv.tm_sec, &rtiv.tm_min, &rtiv.tm_hour, &rtiv.tm_mday, &rtiv.tm_mon, &rtiv.tm_year, &rtiv.tm_wday, &rtiv.tm_yday, &rtiv.tm_isdst, str, cmd)){
-					for (i = 0; i < pls; i++){
-						if (!strcmp(str, name) && l > 1){
+				if (l > 1){
+					while (EOF != fscanf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", &rtiv.tm_sec, &rtiv.tm_min, &rtiv.tm_hour, &rtiv.tm_mday, &rtiv.tm_mon, &rtiv.tm_year, &rtiv.tm_wday, &rtiv.tm_yday, &rtiv.tm_isdst, str, cmd)){
+						if (!strcmp(str, name)){
 							int d = (int)(difftime(time(NULL), mktime(&rtiv)) / 86400);
-							if(d <= ds && d >= de){
-								fprintf(lfp, "%s %s got %s\n", asctime(&rtiv), name, cmd);
+							if (d <= ds && d >= de){
+								strftime(timestr, 63, "%c", &rtiv);
+								fprintf(lfp, "%s,%s,%s\n", timestr, str, cmd);
 							}
 						}
 					}
 				}
+				if (l > 0){
+					for (i = 0; i < pls; i++){
+						if (!strcmp(name, pl[i].name)){
+							fprintf(lfp, "%s,%s\n", str, pl[i].status ? "in" : "out");
+						}
+					}
+				}
 			}
+			fclose(lfp);
 		}
 		else printf("\n");
 	}
