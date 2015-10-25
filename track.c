@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
 					pl[i].status = 1;
 					time(&system_time);
 					rtime = localtime(&system_time);
-					fprintf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", rtime->tm_sec, rtime->tm_min, rtime->tm_hour, rtime->tm_mday, rtime->tm_mon, rtime->tm_year, rtime->tm_wday, rtime->tm_yday, rtime->tm_isdst, pl[1].name, cmd);
+					fprintf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", rtime->tm_sec, rtime->tm_min, rtime->tm_hour, rtime->tm_mday, rtime->tm_mon, rtime->tm_year, rtime->tm_wday, rtime->tm_yday, rtime->tm_isdst, pl[i].name, cmd);
 				}
 			}
 		}
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
 					pl[i].status = 0;
 					time(&system_time);
 					rtime = localtime(&system_time);
-					fprintf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", rtime->tm_sec, rtime->tm_min, rtime->tm_hour, rtime->tm_mday, rtime->tm_mon, rtime->tm_year, rtime->tm_wday, rtime->tm_yday, rtime->tm_isdst, pl[1].name, cmd);
+					fprintf(fp, "%i %i %i %i %i %i %i %i %i %s %s\n", rtime->tm_sec, rtime->tm_min, rtime->tm_hour, rtime->tm_mday, rtime->tm_mon, rtime->tm_year, rtime->tm_wday, rtime->tm_yday, rtime->tm_isdst, pl[i].name, cmd);
 				}
 			}
 		}
