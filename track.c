@@ -3,6 +3,78 @@
 #include <stdlib.h>
 #include <time.h>
 
+
+typedef struct{//ID
+	char id[4096];
+}ID;
+
+typedef struct{//strust of peoples and their ID
+	char name[4096];
+	unsigned int status;
+	ID *idlist;
+}ps;
+
+typedef struct{//list of people and ID
+	ps *pl;//list of peoples and their status
+	long int size;
+}pls;
+
+void badfile(const char *filename);//print out bad file warning and quit
+void start_usage(const char *cmd);//print out usage
+pls loadID(pls list, FILE *fp);//load people list
+void saveID(pls list, FILE *fp);//save people list
+unsigned int getstat(pls list, const char *ID);//get status of that ID
+unsigned int setstat(pls list, const char *ID, unsigned int stat);//set status of that ID
+
+pls pl;//list of peoples and their status
+
+
+
+FILE *logfile, *IDfile, *logout;//log history file, ID file, and log output file
+
+int main(int argc, char *argv[]){
+	printf("Loading");//Start Loading
+	if (argc != 3){
+		printf("Wrong number of argument\n");
+		start_usage(argv[0]);
+	}
+	logfile = fopen(argv[1], "ab+");//open logfile
+	if(logfile == NULL) badfile(argv[1]);//checkfile
+	IDfile = fopen(argv[2], "ab+");//open logfile
+	if(IDfile == NULL) badfile(argv[2]);
+	pl = loadID(pl, IDfile);//load ID's
+
+}
+
+void start_usage(const char *cmd){
+	printf("%s logfile.txt IDdata.txt", cmd);
+}
+
+void badfile(const char *filename){//print out bad file warning and quit
+	printf("file %s could not be opend or created", filename);
+}
+
+pls loadID(pls list, FILE *fp){//load people list
+	char *IDlist = NULL;
+	list.size = 0;
+	free(list.pl);//free anything left
+	list.pl = NULL;
+	while ( (IDlist = fgets(IDlist, 16384, fp)) != NULL){
+		list.size++;
+		list.pl = realloc(list.pl, list.size*sizeof(pl));//reallocate memory for pl
+		
+	}
+	return list;
+}
+
+void saveID(pls list, FILE *fp){//save people list
+
+}
+
+
+
+//old code
+/*
 typedef struct{
 	char name[4096];
 	unsigned int status;
@@ -212,3 +284,4 @@ quit:
 	fclose(fp);
 	exit(0);
 }
+*/
