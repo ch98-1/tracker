@@ -11,6 +11,7 @@ typedef struct{//ID
 typedef struct{//strust of peoples and their ID
 	char name[4096];
 	unsigned int status;
+	long int size;
 	ID *idlist;
 }ps;
 
@@ -21,16 +22,18 @@ typedef struct{//list of people and ID
 
 void badfile(const char *filename);//print out bad file warning and quit
 void start_usage(const char *cmd);//print out usage
-pls loadID(pls list, FILE *fp);//load people list
-void saveID(pls list, FILE *fp);//save people list
+pls loadID(pls list, char *fn);//load people list
+void saveID(pls list, char *fn);//save people list
+void freeID(pls list);//free people list
 unsigned int getstat(pls list, const char *ID);//get status of that ID
 unsigned int setstat(pls list, const char *ID, unsigned int stat);//set status of that ID
+void quit(void);//quit
 
 pls pl;//list of peoples and their status
 
+char *IDlistfile;//id list file name
 
-
-FILE *logfile, *IDfile, *logout;//log history file, ID file, and log output file
+FILE *logfile, *logout;//log history file, ID file, and log output file
 
 int main(int argc, char *argv[]){
 	printf("Loading");//Start Loading
@@ -40,21 +43,25 @@ int main(int argc, char *argv[]){
 	}
 	logfile = fopen(argv[1], "ab+");//open logfile
 	if(logfile == NULL) badfile(argv[1]);//checkfile
-	IDfile = fopen(argv[2], "ab+");//open logfile
-	if(IDfile == NULL) badfile(argv[2]);
-	pl = loadID(pl, IDfile);//load ID's
+	pl = loadID(pl, argv[2]);//load ID's
+	strcpy(IDlistfile, argv[2]);//copy file name
 
 }
 
 void start_usage(const char *cmd){
 	printf("%s logfile.txt IDdata.txt", cmd);
+	exit(EXIT_FAILURE);
 }
 
 void badfile(const char *filename){//print out bad file warning and quit
 	printf("file %s could not be opend or created", filename);
+	exit(EXIT_FAILURE);
 }
 
-pls loadID(pls list, FILE *fp){//load people list
+pls loadID(pls list, char *fn){//load people list
+	FILE *fp = fopen(fn, "ab+");//open id file
+	if(fp == NULL) badfile(fn);
+	rewind(fp);//get it to start of file
 	char *IDlist = NULL;
 	list.size = 0;
 	free(list.pl);//free anything left
@@ -62,13 +69,50 @@ pls loadID(pls list, FILE *fp){//load people list
 	while ( (IDlist = fgets(IDlist, 16384, fp)) != NULL){
 		list.size++;
 		list.pl = realloc(list.pl, list.size*sizeof(pl));//reallocate memory for pl
-		
+		char *idstr = NULL;
+		free(list.pl[list.size - 1].idlist);//free this
+		list.pl[list.size - 1].idlist = NULL;
+		strcpy(list.pl[list.size - 1].name, strtok(IDlist, " ,:;"));//get the name
+		list.pl[list.size - 1].status = atoi(strtok(NULL, " ,:;"));//get the status
+		list.pl[list.size - 1].size = 0;
+		while((idstr = strtok(NULL, " ,.:;")) != NULL ){//get ID's as list
+			list.pl[list.size - 1].size++;
+			list.pl[list.size - 1].idlist = realloc(list.pl[list.size - 1].idlist, list.pl[list.size - 1].size*sizeof(ID));//add more memory to ID list
+			strcpy(list.pl[list.size - 1].idlist[list.pl[list.size - 1].size - 1].id, idstr);//copy ID
+		}
 	}
+	fflush(fp);
+	fclose(fp);
 	return list;
 }
 
-void saveID(pls list, FILE *fp){//save people list
+void saveID(pls list, char *fn){//save people list
+	FILE *fp = fopen(fn, "wb+");//open id file for writing
+	if(fp == NULL) badfile(fn);
+	rewind(fp);//get it to start of file
+	unsigned long int i, j;
+	for(i = 0; i < list.size; i++){
+		fprintf(fp, "%s, %i, ", list.pl[i].name, list.pl[i].status);
+		for(j = 0; j < list.pl[i].size; j++){
+			fputs(list.pl[i].idlist[j].id, fp);//add ID
+			fputs(", ", fp);//add seperator
+		}
+	}
+	fflush(fp);
+	fclose(fp);
+}
 
+void freeID(pls list){//free people list
+	unsigned long int i;
+	for(i = 0; i < list.size; i++){
+		free(list.pl[i].idlist);//free idlist
+	}
+	free(list.pl);
+}
+
+void quit(void){
+	saveID(pl, IDlistfile);//save ID list
+	freeID(pl);//free ID list
 }
 
 
